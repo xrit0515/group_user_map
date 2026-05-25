@@ -14,6 +14,8 @@ const GIST_ID = URL_GIST_ID || import.meta.env.VITE_GIST_ID || 'c2a482e1a74452d4
 const GIST_FILE_NAME = import.meta.env.VITE_GIST_FILE_NAME || 'usermap.json';
 const GITHUB_API_BASE = 'https://api.github.com/gists';
 const MAP_JSON_SOURCES = [
+  // Local fallback served from Vite's `public/` folder (works offline/deployed under the `base` path)
+  '/group_user_map/china.json',
   'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',
   'https://unpkg.com/echarts@5.4.2/map/json/china.json',
   'https://cdn.jsdelivr.net/npm/echarts@5.4.2/map/json/china.json',
@@ -120,22 +122,30 @@ function App() {
     fetchSubmissions();
 
     async function loadChinaMap() {
+      let lastError = null;
       for (const url of MAP_JSON_SOURCES) {
         try {
-          const response = await fetch(url);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
           if (!response.ok) {
+            lastError = `HTTP ${response.status} from ${url}`;
+            console.warn('地图 CDN 返回非 200：', lastError);
             continue;
           }
           const geoJson = await response.json();
           echarts.registerMap('china', geoJson);
           setMapLoaded(true);
           return;
-        } catch (error) {
-          // Try next CDN
+        } catch (err) {
+          lastError = err.message || String(err);
+          console.warn('加载地图失败，从', url, lastError);
         }
       }
 
-      setError('地图加载失败，请检查网络连接或更换 CDN。');
+      console.error('所有地图源加载失败：', lastError);
+      setError(`地图加载失败：${lastError || '未知错误'}，请检查网络或更换 CDN。`);
     }
 
     loadChinaMap();
@@ -304,6 +314,8 @@ function App() {
           {showMap ? (
             mapLoaded ? (
               <ReactECharts echarts={echarts} option={chartOption} style={{ height: '520px', width: '100%' }} />
+            ) : error ? (
+              <div className="placeholder error">地图加载失败：{error}</div>
             ) : (
               <div className="placeholder">地图数据加载中，请稍候...</div>
             )

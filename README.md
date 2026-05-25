@@ -21,15 +21,28 @@ React web app for Chinese province submissions, with direct GitHub Gist storage 
 - If the token is provided through the URL, the app will verify it automatically.
 
 ## Deployment
-- Build once with `npm run build`
+- Build once with `npm run build` (outputs to `docs/`)
 - Preview locally with `npm run preview`
-- GitHub Pages will host the static frontend at `https://xrit0515.github.io/group_user_map/`
+- The site will be published at `https://<your-username>.github.io/group_user_map/` once deployed
 
 ## GitHub Pages Deployment
-- A GitHub Actions workflow is included at `.github/workflows/deploy.yml`
-- On every push to `main`, the site will be built and deployed to the `gh-pages` branch
-- The hosted URL will be:
-  `https://xrit0515.github.io/group_user_map/`
+- This repo builds to `docs/` so you can serve the site directly from the `main` branch (`main` -> `/docs`) via GitHub Pages, or use the included GitHub Actions workflow to publish `docs/` to the `gh-pages` branch automatically.
+- To use the Actions workflow (already present at `.github/workflows/deploy.yml`): the workflow runs on push to `main`, builds the site, and publishes the `docs/` output.
+
+Quick deploy steps (option A - Pages from `main`/`docs`):
+1. Push the repo to GitHub.
+2. In your repository Settings → Pages, choose `Branch: main` and `Folder: /docs` then save.
+
+Option B (Actions publishing to `gh-pages`):
+1. Push the repo to GitHub.
+2. The workflow will run on push to `main` and publish the `docs/` output to the `gh-pages` branch. Enable GitHub Pages to serve from the `gh-pages` branch if needed.
+
+Commands to build locally:
+```bash
+npm install
+npm run build
+npm run preview
+```
 
 ## Notes
 - `VITE_GIST_ID` should point to a gist used for storing `usermap.json`.
