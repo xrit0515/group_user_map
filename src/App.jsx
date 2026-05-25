@@ -60,7 +60,8 @@ function App() {
     if (!GIST_ID) {
       throw new Error('请在 VITE_GIST_ID 环境变量中配置 Gist ID。');
     }
-    const response = await fetch(`${GITHUB_API_BASE}/${GIST_ID}`, {
+    const url = `${GITHUB_API_BASE}/${GIST_ID}?t=${Date.now()}`; // Cache buster
+    const response = await fetch(url, {
       headers: gistHeaders(),
     });
     if (!response.ok) {
@@ -253,7 +254,9 @@ function App() {
   }
 
   const sortedItems = useMemo(
-    () => [...PROVINCES].sort((a, b) => provinceCounts[b] - provinceCounts[a]),
+    () => [...PROVINCES]
+      .sort((a, b) => provinceCounts[b] - provinceCounts[a])
+      .filter((name) => provinceCounts[name] > 0),
     [provinceCounts]
   );
 
@@ -331,7 +334,7 @@ function App() {
             <strong>{submissions.length}</strong>
           </div>
           <div className="summary-list">
-            {sortedItems.slice(0, 8).map((name) => (
+            {sortedItems.map((name) => (
               <div key={name} className="summary-row">
                 <span>{name}</span>
                 <strong>{provinceCounts[name]}</strong>
