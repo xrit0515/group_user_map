@@ -15,6 +15,11 @@ React web app for Chinese province submissions, with direct GitHub Gist storage 
 3. Run `npm install`.
 4. Use `npm run dev` to start the frontend.
 
+## Runtime Token and URL Support
+- You can pass a GitHub token in the URL using `?token=YOUR_TOKEN`.
+- You can also override the Gist ID via `?gist_id=YOUR_GIST_ID`.
+- If the token is provided through the URL, the app will verify it automatically.
+
 ## Deployment
 - Build once with `npm run build`
 - Preview locally with `npm run preview`
@@ -29,4 +34,5 @@ React web app for Chinese province submissions, with direct GitHub Gist storage 
 ## Notes
 - `VITE_GIST_ID` should point to a gist used for storing `usermap.json`.
 - Data is read/written directly from the browser using GitHub's Gist API.
-- To submit data, enter a GitHub token directly in the page; the token is not required for read-only viewing.
+- To submit data, enter a GitHub token directly in the page or provide it via URL query parameter `?token=YOUR_TOKEN`.
+- Read-only viewing works without a token.

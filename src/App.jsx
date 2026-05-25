@@ -7,9 +7,17 @@ import { CanvasRenderer } from 'echarts/renderers';
 
 echarts.use([MapChart, TooltipComponent, VisualMapComponent, CanvasRenderer]);
 
-const GIST_ID = import.meta.env.VITE_GIST_ID || 'c2a482e1a74452d4d09c324ef6d79c0a';
+const URL_PARAMS = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+const URL_GIST_ID = URL_PARAMS.get('gist_id') || URL_PARAMS.get('gist') || '';
+const URL_GITHUB_TOKEN = URL_PARAMS.get('token') || URL_PARAMS.get('github_token') || '';
+const GIST_ID = URL_GIST_ID || import.meta.env.VITE_GIST_ID || 'c2a482e1a74452d4d09c324ef6d79c0a';
 const GIST_FILE_NAME = import.meta.env.VITE_GIST_FILE_NAME || 'usermap.json';
 const GITHUB_API_BASE = 'https://api.github.com/gists';
+const MAP_JSON_SOURCES = [
+  'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',
+  'https://unpkg.com/echarts@5.4.2/map/json/china.json',
+  'https://cdn.jsdelivr.net/npm/echarts@5.4.2/map/json/china.json',
+];
 
 const PROVINCES = [
   '北京', '天津', '上海', '重庆', '河北', '山西', '辽宁', '吉林', '黑龙江',
@@ -28,7 +36,7 @@ const PIECEWISE = [
 
 function App() {
   const [province, setProvince] = useState('');
-  const [githubToken, setGithubToken] = useState('');
+  const [githubToken, setGithubToken] = useState(URL_GITHUB_TOKEN);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -58,6 +66,20 @@ function App() {
       throw new Error(`Gist 读取失败：${response.status} ${body}`);
     }
     return response.json();
+  }
+
+  async function verifyGithubToken(token) {
+    const authToken = token?.trim();
+    if (!authToken) {
+      return false;
+    }
+    const response = await fetch('https://api.github.com/user', {
+      headers: gistHeaders(true, authToken),
+    });
+    if (!response.ok) {
+      throw new Error('GitHub 令牌验证失败，请确认 token 是否正确。');
+    }
+    return true;
   }
 
   async function loadSubmissions() {
@@ -98,12 +120,7 @@ function App() {
     fetchSubmissions();
 
     async function loadChinaMap() {
-      const cdnUrls = [
-        'https://unpkg.com/echarts@5.4.2/map/json/china.json',
-        'https://cdn.jsdelivr.net/npm/echarts@5.4.2/map/json/china.json',
-      ];
-
-      for (const url of cdnUrls) {
+      for (const url of MAP_JSON_SOURCES) {
         try {
           const response = await fetch(url);
           if (!response.ok) {
@@ -136,6 +153,14 @@ function App() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (URL_GITHUB_TOKEN) {
+      verifyGithubToken(URL_GITHUB_TOKEN)
+        .then(() => setMessage('URL 中的 GitHub 令牌已验证，可用于保存到 Gist。'))
+        .catch((verifyError) => setError(verifyError.message));
+    }
+  }, []);
 
   const provinceCounts = useMemo(() => {
     const counts = PROVINCES.reduce((acc, item) => ({ ...acc, [item]: 0 }), {});
@@ -249,6 +274,15 @@ function App() {
                   </option>
                 ))}
               </select>
+            </label>
+            <label>
+              GitHub Token
+              <input
+                type="password"
+                value={githubToken}
+                onChange={(event) => setGithubToken(event.target.value)}
+                placeholder="支持 URL 参数 token 或在此输入"
+              />
             </label>
             <div className="actions-row">
               <button type="submit" disabled={loading}>
