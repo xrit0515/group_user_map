@@ -208,10 +208,16 @@ function App() {
           type: 'map',
           map: 'china',
           roam: false,
-          label: { show: false },
+          label: {
+            show: true,
+            formatter: ({ value }) => value > 0 ? String(value) : '',
+            color: '#000',
+            fontSize: 10,
+            fontWeight: 'bold',
+          },
           emphasis: {
             itemStyle: { areaColor: '#f3b23a' },
-            label: { show: true, color: '#000' },
+            label: { show: true, color: '#000', fontSize: 12 },
           },
           data: chartData,
         },
