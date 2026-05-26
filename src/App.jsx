@@ -137,6 +137,10 @@ function App() {
           }
           const geoJson = await response.json();
           echarts.registerMap('china', geoJson);
+          console.log('✓ Map registered. GeoJSON features count:', geoJson.features?.length);
+          if (geoJson.features?.[0]) {
+            console.log('First feature properties:', geoJson.features[0].properties);
+          }
           setMapLoaded(true);
           return;
         } catch (err) {
@@ -196,40 +200,44 @@ function App() {
   );
 
   const chartOption = useMemo(
-    () => ({
-      tooltip: {
-        trigger: 'item',
-        formatter: ({ name, value }) => `${name}<br/>用户数量：${value || 0}`,
-      },
-      visualMap: {
-        type: 'piecewise',
-        pieces: PIECEWISE,
-        left: 'left',
-        top: 'middle',
-        orient: 'vertical',
-        textStyle: { color: '#222' },
-      },
-      series: [
-        {
-          name: '省份用户数',
-          type: 'map',
-          map: 'china',
-          roam: false,
-          label: {
-            show: true,
-            formatter: ({ value }) => value > 0 ? String(value) : '',
-            color: '#000',
-            fontSize: 10,
-            fontWeight: 'bold',
-          },
-          emphasis: {
-            itemStyle: { areaColor: '#f3b23a' },
-            label: { show: true, color: '#000', fontSize: 12 },
-          },
-          data: chartData,
+    () => {
+      const option = {
+        tooltip: {
+          trigger: 'item',
+          formatter: ({ name, value }) => `${name}<br/>用户数量：${value || 0}`,
         },
-      ],
-    }),
+        visualMap: {
+          type: 'piecewise',
+          pieces: PIECEWISE,
+          left: 'left',
+          top: 'middle',
+          orient: 'vertical',
+          textStyle: { color: '#222' },
+        },
+        series: [
+          {
+            name: '省份用户数',
+            type: 'map',
+            map: 'china',
+            roam: false,
+            label: {
+              show: true,
+              formatter: ({ value }) => value > 0 ? String(value) : '',
+              color: '#000',
+              fontSize: 10,
+              fontWeight: 'bold',
+            },
+            emphasis: {
+              itemStyle: { areaColor: '#f3b23a' },
+              label: { show: true, color: '#000', fontSize: 12 },
+            },
+            data: chartData,
+          },
+        ],
+      };
+      console.log('chartOption.series[0].data:', option.series[0].data);
+      return option;
+    },
     [chartData]
   );
 
