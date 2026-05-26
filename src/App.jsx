@@ -157,8 +157,10 @@ function App() {
     setError('');
     try {
       const data = await loadSubmissions();
+      console.log('✓ Loaded submissions from Gist:', data);
       setSubmissions(data);
     } catch (err) {
+      console.error('✗ Failed to load submissions:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -313,8 +315,23 @@ function App() {
             <p>省份名称为中文列表。提交后数据会直接写入 GitHub Gist。</p>
             <p>“查看地图”按钮可在不提交数据的情况下直接查看当前统计。</p>
             <p>要提交数据，请在页面中输入您的 GitHub 访问令牌。</p>
-          </div>
-          {message && <div className="message success">{message}</div>}
+          </div>          <div style={{ fontSize: '12px', color: '#666', marginTop: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+            <p style={{ margin: '4px 0' }}>
+              <strong>Gist ID:</strong> {GIST_ID}
+            </p>
+            <p style={{ margin: '4px 0' }}>
+              <strong>数据条数:</strong> {submissions.length}
+            </p>
+            <p style={{ margin: '4px 0' }}>
+              <strong>数据状态:</strong> {submissions.length === 0 ? '未找到数据或 Gist 为空' : '已加载'}
+            </p>
+            <details style={{ marginTop: '8px' }}>
+              <summary style={{ cursor: 'pointer', color: '#0066cc' }}>查看原始数据</summary>
+              <pre style={{ margin: '4px 0', fontSize: '11px', overflow: 'auto', maxHeight: '200px' }}>
+                {JSON.stringify(submissions, null, 2)}
+              </pre>
+            </details>
+          </div>          {message && <div className="message success">{message}</div>}
           {error && <div className="message error">{error}</div>}
         </section>
 
