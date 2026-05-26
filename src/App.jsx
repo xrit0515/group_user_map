@@ -182,11 +182,16 @@ function App() {
         counts[entry.province] += 1;
       }
     });
+    console.log('provinceCounts:', counts);
     return counts;
   }, [submissions]);
 
   const chartData = useMemo(
-    () => PROVINCES.map((name) => ({ name, value: provinceCounts[name] || 0 })),
+    () => {
+      const data = PROVINCES.map((name) => ({ name, value: provinceCounts[name] || 0 }));
+      console.log('chartData:', data);
+      return data;
+    },
     [provinceCounts]
   );
 
